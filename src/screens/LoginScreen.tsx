@@ -46,7 +46,10 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = () => {
-    Alert.alert('Google', 'Continuar con Google (pendiente de integración con Supabase).');
+    Alert.alert(
+      'Google',
+      'La autenticación con Google se configurará en una siguiente etapa.'
+    );
   };
 
   return (
@@ -74,7 +77,11 @@ export default function LoginScreen() {
           variant="primary"
         />
 
-        <CustomButton title="Continuar con Google" onPress={handleGoogleLogin} variant="secondary" />
+        <CustomButton
+          title="Continuar con Google"
+          onPress={handleGoogleLogin}
+          variant="secondary"
+        />
       </View>
     </View>
   );
