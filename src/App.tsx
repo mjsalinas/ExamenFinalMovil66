@@ -1,13 +1,16 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import HomeScreen from './screens/HomeScreen';
+import LoginScreen from './screens/LoginScreen';
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
-      <HomeScreen />
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <LoginScreen />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
