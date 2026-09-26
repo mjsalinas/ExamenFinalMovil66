@@ -40,16 +40,16 @@ export const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Iniciar Sesión</Text>
+      <Text style={styles.title}>Iniciar Sesión a tu app favorita</Text>
 
       <CustomInput
-        placeholder="Correo electrónico"
+        placeholder="Ingrese su Correo electrónico"
         value={email}
         onChangeText={setEmail}
       />
 
       <CustomInput
-        placeholder="Contraseña"
+        placeholder="Ingrese su Contraseña"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -73,6 +73,7 @@ export const LoginScreen = () => {
           onPress={loginWithGoogle}
           variant="secondary"
         />
+
       </View>
     </View>
   );
