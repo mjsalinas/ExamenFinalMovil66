@@ -14,48 +14,58 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../components/CustomButton';
 import CustomInput from '../components/CustomInput';
 import { useAuth } from '../context/AuthContext';
-import { signInWithGoogle } from '../lib/googleAuth';
 
-type LoginScreenProps = {
-  onRegisterPress: () => void;
+type RegisterScreenProps = {
+  onBackToLogin: () => void;
 };
 
-export default function LoginScreen({ onRegisterPress }: LoginScreenProps) {
-  const { login } = useAuth();
+export default function RegisterScreen({ onBackToLogin }: RegisterScreenProps) {
+  const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleEmailLogin = async () => {
+  const handleRegister = async () => {
     if (!email || !password) {
       Alert.alert(
         'Campos requeridos',
-        'Ingresa tu correo y tu contraseña para continuar.'
+        'Ingresa tu correo y una contraseña para continuar.'
+      );
+      return;
+    }
+
+    // El largo minimo lo valida Supabase segun la configuracion del proyecto, asi
+    // que no se replica aca una regla que podria quedar desactualizada.
+    if (password !== confirmPassword) {
+      Alert.alert(
+        'Las contraseñas no coinciden',
+        'Verificá que hayas escrito la misma contraseña dos veces.'
       );
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
-    } catch (error) {
-      Alert.alert(
-        'No se pudo iniciar sesión',
-        error instanceof Error ? error.message : 'Ocurrió un error inesperado.'
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      const { requiresEmailConfirmation } = await register(email, password);
 
-  const handleGoogleLogin = async () => {
-    setIsSubmitting(true);
-    try {
-      await signInWithGoogle();
+      /*
+       * Si hubo sesion, AuthProvider ya recibio el user y App.tsx cambio solo a
+       * HomeScreen: esta pantalla quedo desmontada. Asi que llegar aca con la
+       * sesion creada es practicamente imposible, y si se llegara no hay que
+       * avisar nada porque el usuario ya esta dentro.
+       */
+      if (requiresEmailConfirmation) {
+        Alert.alert(
+          'Revisá tu correo',
+          `Enviamos un email a ${email}. Confirmá la cuenta desde el link que ` +
+            'llegó para poder iniciar sesión.'
+        );
+      }
     } catch (error) {
       Alert.alert(
-        'No se pudo iniciar sesion con Google',
-        error instanceof Error ? error.message : 'Ocurrio un error inesperado.'
+        'No se pudo crear la cuenta',
+        error instanceof Error ? error.message : 'Ocurrió un error inesperado.'
       );
     } finally {
       setIsSubmitting(false);
@@ -73,8 +83,8 @@ export default function LoginScreen({ onRegisterPress }: LoginScreenProps) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>Iniciar sesión</Text>
-            <Text style={styles.subtitle}>Accede a tu cuenta para continuar</Text>
+            <Text style={styles.title}>Crear cuenta</Text>
+            <Text style={styles.subtitle}>Registrate con tu correo y contraseña</Text>
           </View>
 
           <CustomInput
@@ -84,7 +94,7 @@ export default function LoginScreen({ onRegisterPress }: LoginScreenProps) {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
-            testID="input-email"
+            testID="input-register-email"
           />
 
           <CustomInput
@@ -94,29 +104,32 @@ export default function LoginScreen({ onRegisterPress }: LoginScreenProps) {
             onChangeText={setPassword}
             secureTextEntry
             autoCapitalize="none"
-            testID="input-password"
+            testID="input-register-password"
+          />
+
+          <CustomInput
+            label="Confirmar contraseña"
+            placeholder="Repetí tu contraseña"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            testID="input-register-confirm-password"
           />
 
           <CustomButton
-            title="Iniciar sesión"
-            onPress={handleEmailLogin}
+            title="Crear cuenta"
+            onPress={handleRegister}
             variant="primary"
             loading={isSubmitting}
           />
 
-          <CustomButton
-            title="Continuar con Google"
-            onPress={handleGoogleLogin}
-            variant="secondary"
-            loading={isSubmitting}
-          />
-
           <Pressable
-            onPress={onRegisterPress}
+            onPress={onBackToLogin}
             accessibilityRole="button"
             style={styles.link}
           >
-            <Text style={styles.linkText}>¿No tenés cuenta? Creá una</Text>
+            <Text style={styles.linkText}>¿Ya tenés cuenta? Iniciá sesión</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>

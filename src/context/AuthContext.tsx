@@ -8,11 +8,15 @@ export type User = {
   email: string | null;
 };
 
+export type RegisterResult = {
+  requiresEmailConfirmation: boolean;
+};
+
 export type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<RegisterResult>;
   logout: () => Promise<void>;
 };
 
@@ -46,12 +50,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const register = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      throw error;
-    }
-  }, []);
+  const register = useCallback(
+    async (email: string, password: string): Promise<RegisterResult> => {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        throw error;
+      }
+
+      /*
+       * Con la confirmacion de email activada en el proyecto, signUp crea el
+       * usuario pero NO devuelve sesion: hay que confirmar desde el correo antes
+       * de poder entrar. Sin esto el registro "funciona" y no pasa nada visible,
+       * porque AuthProvider nunca recibe un user y la app se queda en la misma
+       * pantalla.
+       */
+      return { requiresEmailConfirmation: data.session === null };
+    },
+    []
+  );
 
   const logout = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
