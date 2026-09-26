@@ -1,25 +1,115 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-type AuthState = {
-  isAuthenticated: boolean;
-  user: string | null;
-  signIn: (name: string) => void;
-  signOut: () => void;
+import { supabase } from '../lib/supabase';
+
+type User = {
+  id: string;
+  email: string;
 };
 
-const AuthContext = createContext<AuthState | undefined>(undefined);
+type AuthContextType = {
+  user: User | null;
+  isReady: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+const mapUser = (email?: string | null, id?: string | null): User | null => {
+  if (!email || !id) {
+    return null;
+  }
+
+  return { id, email };
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
-  const value = useMemo<AuthState>(
+  useEffect(() => {
+    const loadSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUser(mapUser(session?.user?.email, session?.user?.id));
+      setIsReady(true);
+    };
+
+    loadSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(mapUser(session?.user?.email, session?.user?.id));
+      setIsReady(true);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !password) {
+      throw new Error('Debes ingresar correo y contraseña.');
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    setUser(mapUser(data.user?.email, data.user?.id));
+  };
+
+  const register = async (email: string, password: string) => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !password) {
+      throw new Error('Debes ingresar correo y contraseña.');
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: trimmedEmail,
+      password,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    setUser(mapUser(data.user?.email, data.user?.id));
+  };
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
+
+    setUser(null);
+  };
+
+  const value = useMemo<AuthContextType>(
     () => ({
-      isAuthenticated: Boolean(user),
       user,
-      signIn: (name: string) => setUser(name),
-      signOut: () => setUser(null),
+      isReady,
+      login,
+      register,
+      logout,
     }),
-    [user]
+    [user, isReady]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -29,7 +119,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth debe usarse dentro de AuthProvider');
   }
 
   return context;
