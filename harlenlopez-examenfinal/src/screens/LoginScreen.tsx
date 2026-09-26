@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -18,53 +22,52 @@ export const LoginScreen = () => {
     action === 'login' ? login(email, password) : register(email, password);
   };
 
-  
-    /* 
-      Nota  Google:
-      Ing leI la documentación de Supabase para Expo y medio comprendi la logica 
-      entiendo que se usa supabase.auth.signInWithOAuth({ provider: 'google' }) 
-      y que hay que usar expo-auth-session para atrapar el deep link de regreso
-
-      trate la estructura, pero me trabé configurando los Client IDs en la consola 
-      de google cloud
-    */
   const handleGoogleLogin = async () => {
     try {
-      console.log('Iniciando intento de Google OAuth...');
       
-    
+      const redirectUrl = AuthSession.makeRedirectUri();
+
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-         
-          redirectTo: 'harlenlopez-examenfinal://google-callback', 
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true, 
         },
       });
 
-      if (error) {
-       
-        console.warn("Error esperado por falta de GCP:", error.message);
-        Alert.alert(
-          'Implementación Parcial OAuth', 
-          'Se implementó signInWithOAuth, pero el flujo se interrumpe por falta de credenciales de Google Cloud Console'
-        );
-        return;
-      }
+      if (error) throw error;
 
+      
       if (data?.url) {
-        console.log("URL del proveedor generada:", data.url);
-      }
+        const response = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
 
-    } catch (err) {
-      console.error("Excepción en flujo de Google:", err);
+       
+       if (response.type === 'success') {
+        const { url } = response;
+        
+       
+        const paramsStr = url.split('#')[1] || url.split('?')[1] || '';
+        const params = Object.fromEntries(paramsStr.split('&').map(p => p.split('=')));
+
+        if (params.access_token && params.refresh_token) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: params.access_token,
+            refresh_token: params.refresh_token,
+          });
+          if (sessionError) throw sessionError;
+        }
+      }
+      }
+    } catch (err: any) {
+      console.error("Error en Google OAuth:", err);
+      Alert.alert('Error', err.message || 'No se pudo iniciar sesión con Google');
     }
   };
-      
-  
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>REGISTRO NACIONAL DE LAS PERSONAS RNP :)</Text>
+      <Text style={styles.title}>Mi App - Login</Text>
 
       <CustomInput placeholder="Correo electrónico" value={email} onChangeText={setEmail} />
       <CustomInput placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry={true} />
@@ -82,11 +85,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     padding: 20, 
     backgroundColor: '#f5f5f5' 
-},
+  },
   title: { 
     fontSize: 26, 
     fontWeight: 'bold', 
     textAlign: 'center', 
     marginBottom: 20 
-}
+  }
 });
