@@ -61,8 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   /* 
      INVESTIGACIÓN DE AUTENTICACIÓN GOOGLE OAUTH:
-     1. Generamos un URI de redirección compatible con Expo (AuthSession.makeRedirectUri).
-     2. Llamamos a supabase.auth.signInWithOAuth especificando el proveedor 'google' y el URI.
+     1. Se genera un URI de redirección compatible con Expo (AuthSession.makeRedirectUri).
+     2. Se llamo a supabase.auth.signInWithOAuth especificando el proveedor 'google' y el URI.
      3. Abrimos el navegador interno de la app con WebBrowser.openAuthSessionAsync para permitir
         que el usuario introduzca sus credenciales de Google.
      4. Parseamos la URL de retorno para obtener el access_token y refresh_token del hash (#).
