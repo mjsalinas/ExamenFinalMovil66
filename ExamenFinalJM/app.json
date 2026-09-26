@@ -3,6 +3,7 @@
     "name": "ExamenFinalJM",
     "slug": "ExamenFinalJM",
     "version": "1.0.0",
+    "scheme": "examenfinaljm",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,10 +22,16 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.examenfinaljm"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "27baa13f-aa5e-42b8-9ee7-67a0285c7d74"
+      }
     }
   }
 }
