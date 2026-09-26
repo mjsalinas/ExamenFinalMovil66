@@ -1,13 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, SafeAreaView } from 'react-native';
-import Login from './src/screens/Login';
+import { StyleSheet, SafeAreaView } from 'react-native';
+import LoginScreen from './src/screens/LoginScreen';
+import { AuthProvider } from './src/context/AuthContext';
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
-      <Login/>
-      <StatusBar style="auto" />
-    </SafeAreaView>
+    <AuthProvider>
+      <SafeAreaView style={styles.container}>
+        <LoginScreen />
+        <StatusBar style="auto" />
+      </SafeAreaView>
+    </AuthProvider>
   );
 }
 
