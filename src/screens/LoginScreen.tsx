@@ -12,12 +12,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CustomButton from '../components/CustomButton';
 import CustomInput from '../components/CustomInput';
+import { useAuth } from '../context/AuthContext';
+import { signInWithGoogle } from '../lib/googleAuth';
 
 export default function LoginScreen() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleEmailLogin = () => {
+  const handleEmailLogin = async () => {
     if (!email || !password) {
       Alert.alert(
         'Campos requeridos',
@@ -26,11 +30,31 @@ export default function LoginScreen() {
       return;
     }
 
-    // Parte 2.3: conectar con Supabase signInWithPassword
+    setIsSubmitting(true);
+    try {
+      await login(email, password);
+    } catch (error) {
+      Alert.alert(
+        'No se pudo iniciar sesión',
+        error instanceof Error ? error.message : 'Ocurrió un error inesperado.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    // Parte 2.4: conectar con Supabase OAuth
+  const handleGoogleLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      Alert.alert(
+        'No se pudo iniciar sesion con Google',
+        error instanceof Error ? error.message : 'Ocurrio un error inesperado.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -72,12 +96,14 @@ export default function LoginScreen() {
             title="Iniciar sesión"
             onPress={handleEmailLogin}
             variant="primary"
+            loading={isSubmitting}
           />
 
           <CustomButton
             title="Continuar con Google"
             onPress={handleGoogleLogin}
             variant="secondary"
+            loading={isSubmitting}
           />
         </ScrollView>
       </KeyboardAvoidingView>
