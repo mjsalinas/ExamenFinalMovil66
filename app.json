@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "ExamenFinalMovil66-temp",
+    "slug": "ExamenFinalMovil66-temp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logokuromi-icon.jpeg",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/logokuromi-icon,jpeg"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/logokuromi-icon.jpeg"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
+  }
+}
