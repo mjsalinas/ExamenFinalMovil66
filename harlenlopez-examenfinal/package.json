@@ -1,10 +1,12 @@
 {
   "name": "harlenlopez-examenfinal",
-   "main": "index.ts",
+  "main": "index.ts",
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~57.0.20",
     "@react-navigation/bottom-tabs": "^7.18.17",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
     "expo": "~57.0.25",
     "expo-constants": "~57.0.19",
     "expo-device": "~57.0.2",

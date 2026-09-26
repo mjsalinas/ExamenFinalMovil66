@@ -1,43 +1,21 @@
-import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
-import { StatusBar } from "expo-status-bar";
-import React from "react";
-import { AuthProvider } from "./src/contexts/AuthContext";
+import React from 'react';
+import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { LoginScreen } from './src/screens/LoginScreen';
+import { HomeScreen } from './src/screens/HomeScreen'; 
 
 
 
-function AppNavigation() {
-  const { colors, isDark } = useTheme();
-  const baseTheme = isDark ? DarkTheme : DefaultTheme;
-
-  return (
-    <NavigationContainer
-      ref={navigationRef}
-      theme={{
-        ...baseTheme,
-        colors: {
-          ...baseTheme.colors,
-          background: colors.background,
-          card: colors.surface,
-          text: colors.text,
-          border: colors.border,
-          primary: colors.primary,
-        },
-      }}
-    >
-      <StatusBar style={isDark ? "light" : "dark"} />
-      <StackNavigator />
-    </NavigationContainer>
-  );
-}
+const AppContent = () => {
+  const { user } = useAuth();
+  
+ 
+  return user ? <HomeScreen /> : <LoginScreen />;
+};
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <BooksProvider>
-          <AppNavigation />
-        </BooksProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
