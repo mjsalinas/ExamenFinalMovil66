@@ -6,27 +6,33 @@ import CustomInput from '../components/CustomInput';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }: any) {
-  const {login} = useAuth();
+  const { login, register, signInWithGoogle } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error', 'Por favor, completa el correo y la contraseña.');
       return;
     }
-
-    Alert.alert('Éxito', 'Bienvenido.');
+    try {
+      await login(email, password);
+      Alert.alert('Inicio de sesión correcto.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'No se pudo iniciar sesión.');
+    }
   };
-
-  const handleGoogleLogin = () => {
-    console.log('Iniciando flujo de Google OAuth');
+  const handleRegister = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Por favor, completa el correo y la contraseña.');
+      return;
+    }
+    await register(email, password);
   };
 
   return (
     <View style={styles.container}>
-      
       <Text style={styles.title}>Examen Final II</Text>
       <Text style={styles.subtitle}>Bienvenido</Text>
 
@@ -52,8 +58,14 @@ export default function LoginScreen({ navigation }: any) {
       />
 
       <CustomButton
+        title="Registrarse"
+        onPress={handleRegister}
+        variant="secondary" 
+      />
+
+      <CustomButton
         title="Continuar con Google"
-        onPress={handleGoogleLogin}
+        onPress={signInWithGoogle}
         variant="secondary"
       />
 
