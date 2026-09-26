@@ -23,5 +23,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // PKCE: el login con Google (OAuth) recibe un `?code=` en el redirect en vez
+    // de tokens en el fragmento `#...`, más simple de leer desde React Native.
+    flowType: 'pkce',
   },
 });

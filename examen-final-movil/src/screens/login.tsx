@@ -14,11 +14,12 @@ import CustomInput from '@/components/CustomInput';
 import { AuthError, useAuth } from '@/context/AuthContext';
 
 export default function Login() {
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
@@ -35,6 +36,19 @@ export default function Login() {
       setError(err instanceof AuthError ? err.message : 'Ocurrió un error, intenta de nuevo');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      // Si el usuario canceló el navegador, result.type !== 'success' y no pasa nada.
+    } catch (err) {
+      setError(err instanceof AuthError ? err.message : 'Ocurrió un error, intenta de nuevo');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -75,6 +89,13 @@ export default function Login() {
           <View style={styles.buttonSpacing}>
             <CustomButton title="Iniciar sesión" onPress={handleLogin} loading={loading} />
           </View>
+
+          <CustomButton
+            title="Continuar con Google"
+            variant="secundary"
+            onPress={handleGoogleLogin}
+            loading={googleLoading}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

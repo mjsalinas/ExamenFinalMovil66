@@ -1,8 +1,14 @@
 import type { Session, User } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { supabase } from '@/lib/supabase';
+
+// Necesario para que el flujo de OAuth cierre correctamente la pestaña/popup
+// de autenticación, sobre todo en web.
+WebBrowser.maybeCompleteAuthSession();
 
 export type AppUser = {
   id: string;
@@ -25,6 +31,7 @@ type AuthContextValue = {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -74,6 +81,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw new AuthError(error.message);
         if (data.session) setSession(data.session);
+      },
+      signInWithGoogle: async () => {
+        const redirectTo = Linking.createURL('auth-callback');
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo, skipBrowserRedirect: true },
+        });
+        if (error) throw new AuthError(error.message);
+        if (!data.url) throw new AuthError('No se pudo iniciar el flujo de Google.');
+
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        if (result.type !== 'success') return;
+
+        const code = new URL(result.url).searchParams.get('code');
+        if (!code) throw new AuthError('Google no devolvió un código de autorización.');
+
+        const { data: exchangeData, error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) throw new AuthError(exchangeError.message);
+        setSession(exchangeData.session);
       },
       signOut: async () => {
         const { error } = await supabase.auth.signOut();
