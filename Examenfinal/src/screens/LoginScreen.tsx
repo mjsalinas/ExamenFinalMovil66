@@ -10,7 +10,7 @@ export const LoginScreen = () => {
   const { login, register, loginWithGoogle } = useAuth();
 
   const handleLogin = async () => {
-    // Validación básica requerida en rúbrica
+    
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error de validación', 'El correo y la contraseña son obligatorios.');
       return;
@@ -24,7 +24,7 @@ export const LoginScreen = () => {
   };
 
   const handleRegister = async () => {
-    // Validación básica requerida en rúbrica
+   
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error de validación', 'El correo y la contraseña son obligatorios.');
       return;
