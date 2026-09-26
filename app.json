@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "expo-examen-gGLVN0",
-    "slug": "expo-examen-gGLVN0",
+    "name": "ExamenFinalMovil66-1",
+    "slug": "examenfinalmovil66-1",
+    "scheme": "examenfinalmovil66",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,6 +21,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-status-bar",
+      "expo-web-browser"
+    ]
   }
 }
